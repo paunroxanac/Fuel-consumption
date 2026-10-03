@@ -1,1 +1,145 @@
-github.com/paunroxanac/fuel-consumption/new/main
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consum real</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f4f6;--ink:#172230;--mute:#5d6b78;--line:#d5dce1;--acc:#0e7c66;--hot:#c2410c;--field:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181f;--ink:#e8eef2;--mute:#97a6b2;--line:#27343e;--acc:#3fc9a8;--hot:#ff8a4c;--field:#18232c}}
+:root[data-theme="dark"]{--bg:#10181f;--ink:#e8eef2;--mute:#97a6b2;--line:#27343e;--acc:#3fc9a8;--hot:#ff8a4c;--field:#18232c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Barlow,system-ui,sans-serif}
+main{max-width:520px;margin:0 auto;padding:20px 18px 40px}
+h1{font:600 18px Barlow,sans-serif;margin:0 0 18px;color:var(--mute)}
+.big{font:700 96px/0.9 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:-1px;color:var(--acc)}
+.big small{font-size:26px;color:var(--mute);font-weight:600;margin-left:8px;letter-spacing:0}
+.sub{color:var(--mute);margin:6px 0 22px}
+.split{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:26px}
+.split div{padding:12px 0 12px 12px;border-left:1px solid var(--line)}
+.split div:first-child{border-left:0;padding-left:0}
+.split b{display:block;font:700 30px 'Barlow Condensed',sans-serif}
+.split span{color:var(--mute);font-size:14px}
+form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+label{display:flex;flex-direction:column;font-size:14px;color:var(--mute);gap:4px}
+input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:11px 10px;width:100%}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.full{grid-column:1/-1}
+button.add{grid-column:1/-1;font:600 17px Barlow,sans-serif;background:var(--acc);color:#fff;border:0;border-radius:6px;padding:13px;cursor:pointer}
+:root[data-theme="dark"] button.add{color:#10181f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.add{color:#10181f}}
+.err{grid-column:1/-1;color:var(--hot);min-height:1.2em;font-size:14px;margin:0}
+h2{font:600 16px Barlow,sans-serif;margin:0 0 6px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+details{margin:0 0 22px;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+summary{cursor:pointer;color:var(--mute)}
+details form{margin:12px 0 0}
+.car{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.car .full{grid-column:1/-1}
+.split em{display:block;font-style:normal;color:var(--acc);font-weight:600;font-size:15px}
+li .v{font:700 26px 'Barlow Condensed',sans-serif}
+li .m{color:var(--mute);font-size:14px}
+li button{background:none;border:0;color:var(--mute);font-size:14px;padding:8px;cursor:pointer;text-decoration:underline}
+.empty{color:var(--mute);padding:10px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Consum real, calculat din alimentările tale</h1>
+<label class="full" style="margin-bottom:14px">Mașina<select id="car"></select></label>
+<div class="big"><span id="avg">–</span><small>l/100 km</small></div>
+<p class="sub" id="sub"></p>
+<div class="split">
+<div><b id="t-oras">–</b><span>Oraș</span><em id="r-oras"></em></div>
+<div><b id="t-mixt">–</b><span>Mixt</span><em id="r-mixt"></em></div>
+<div><b id="t-extra">–</b><span>Extra-urban</span><em id="r-extra"></em></div>
+</div>
+<div class="car">
+<label>Capacitate rezervor (l)<input id="tank" inputmode="decimal"></label>
+<label>Autonomie rămasă acum (km)<input id="fuel" inputmode="decimal" placeholder="ex. 320"></label>
+<p class="sub full" id="rng" style="margin:0"></p>
+</div>
+<form id="f">
+<label>Data<input type="date" id="d" required></label>
+<label>Tip de drum
+<select id="t"><option value="oras">Oraș</option><option value="mixt" selected>Mixt</option><option value="extra">Extra-urban</option></select></label>
+<label>Km de la alimentarea anterioară<input id="km" inputmode="decimal" placeholder="ex. 540" required></label>
+<label>Litri alimentați (rezervor plin)<input id="l" inputmode="decimal" placeholder="ex. 36,5" required></label>
+<label class="full">Preț pe litru, lei (opțional)<input id="p" inputmode="decimal" placeholder="ex. 7,45"></label>
+<p class="err" id="e"></p>
+<button class="add" type="submit">Adaugă alimentarea</button>
+</form>
+<details><summary>Adaugă o mașină</summary>
+<form id="cf">
+<label class="full">Nume<input id="cn" placeholder="ex. Dacia Duster" required></label>
+<label class="full">Capacitate rezervor (l)<input id="ct" inputmode="decimal" placeholder="ex. 50" required></label>
+<button class="add" type="submit">Adaugă mașina</button>
+</form></details>
+<h2>Istoric</h2>
+<ul id="list"></ul>
+</main>
+<script>
+var KEY='consum-real-v2',S=null;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S){S={cars:[{id:1,name:'Mașina mea',tank:50,fuel:0}],items:[],cur:1};
+ try{JSON.parse(localStorage.getItem('consum-real-v1')||'[]').forEach(function(x){x.car=1;S.items.push(x)})}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function fmt(n){return n==null?'–':n.toFixed(1).replace('.',',')}
+function num(v){return parseFloat(String(v).replace(',','.'))}
+function avg(a){var k=0,l=0;a.forEach(function(x){k+=x.km;l+=x.l});return k>0?l/k*100:null}
+function cur(){return S.cars.filter(function(c){return c.id==S.cur})[0]||S.cars[0]}
+var names={oras:'Oraș',mixt:'Mixt',extra:'Extra-urban'};
+function render(){
+  var c=cur();S.cur=c.id;
+  var sel=$('car');sel.innerHTML='';
+  S.cars.forEach(function(x){var o=document.createElement('option');o.value=x.id;o.textContent=x.name;if(x.id==c.id)o.selected=true;sel.appendChild(o)});
+  var it=S.items.filter(function(x){return x.car==c.id}),a=avg(it);
+  $('avg').textContent=fmt(a);
+  var km=it.reduce(function(s,x){return s+x.km},0),pr=it.filter(function(x){return x.p>0}),sub=it.length?('Medie din '+it.length+(it.length==1?' alimentare':' alimentări')+', '+Math.round(km)+' km.'):'Adaugă prima alimentare ca să vezi consumul.';
+  if(pr.length){var pk=0,pc=0;pr.forEach(function(x){pk+=x.km;pc+=x.l*x.p});sub+=' Cost: '+fmt(pc/pk*100)+' lei/100 km.'}
+  $('sub').textContent=sub;
+  ['oras','mixt','extra'].forEach(function(t){
+    var v=avg(it.filter(function(x){return x.t==t}));
+    $('t-'+t).textContent=fmt(v);
+    var r=c.fuel>0&&(v||a)?Math.round(c.fuel/(v||a)*100):null;
+    $('r-'+t).textContent=r?('~'+r+' km'):'';
+  });
+  $('tank').value=c.tank;$('fuel').value=(c.fuel>0&&a)?Math.round(c.fuel/a*100):'';$('fuel').disabled=!a;
+  $('rng').textContent=a?(c.fuel>0?'Autonomia estimată pe fiecare tip de drum, în funcție de combustibilul rămas.':'Introdu autonomia rămasă (din bord) ca să o vezi pe fiecare tip de drum.'):'Adaugă o alimentare ca să poți introduce autonomia.';
+  var ul=$('list');ul.innerHTML='';
+  if(!it.length){ul.innerHTML='<li class="empty">Nicio alimentare încă.</li>';return}
+  it.slice().sort(function(x,y){return y.d<x.d?-1:1}).forEach(function(x){
+    var li=document.createElement('li');
+    li.innerHTML='<div><div class="v">'+fmt(x.l/x.km*100)+' l/100 km</div><div class="m">'+x.d+' · '+names[x.t]+' · '+x.km+' km · '+x.l+' l'+(x.p>0?' · '+fmt(x.l*x.p)+' lei':'')+'</div></div>';
+    var b=document.createElement('button');b.textContent='Șterge';
+    b.onclick=function(){S.items=S.items.filter(function(i){return i.id!==x.id});save();render()};
+    li.appendChild(b);ul.appendChild(li)});
+}
+$('d').value=new Date().toISOString().slice(0,10);
+$('car').onchange=function(){S.cur=+this.value;save();render()};
+$('tank').onchange=function(){var v=num(this.value);if(v>0){cur().tank=v;save()}render()};
+$('fuel').onchange=function(){var c=cur(),v=num(this.value),a=avg(S.items.filter(function(x){return x.car==c.id}));c.fuel=(v>0&&a)?Math.min(v*a/100,c.tank):0;save();render()};
+$('f').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var km=num($('km').value),l=num($('l').value),p=num($('p').value),e=$('e');
+  if(!(km>0)||!(l>0)){e.textContent='Introdu km și litri ca numere mai mari ca 0.';return}
+  if(l/km*100>40){e.textContent='Valoarea pare prea mare. Verifică km și litrii.';return}
+  e.textContent='';var c=cur();
+  S.items.push({id:Date.now(),car:c.id,d:$('d').value,t:$('t').value,km:km,l:l,p:p>0?p:0});
+  c.fuel=c.tank;
+  save();render();$('km').value='';$('l').value='';$('p').value='';
+});
+$('cf').addEventListener('submit',function(ev){
+  ev.preventDefault();var t=num($('ct').value);if(!(t>0))return;
+  var id=Date.now();S.cars.push({id:id,name:$('cn').value.trim(),tank:t,fuel:0});S.cur=id;
+  save();render();$('cn').value='';$('ct').value='';ev.target.parentNode.open=false;
+});
+render();
+</script>
+</body>
+</html>
