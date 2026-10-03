@@ -1,0 +1,12 @@
+{
+"name":"Consum real",
+"short_name":"Consum",
+"description":"Calculează consumul real al mașinii din alimentările tale.",
+"lang":"ro",
+"start_url":"./",
+"scope":"./",
+"display":"standalone",
+"background_color":"#f1f4f6",
+"theme_color":"#0e7c66",
+"icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}
